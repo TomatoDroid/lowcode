@@ -2,9 +2,11 @@ import React, { MouseEventHandler, useState } from "react";
 import { Component, useComponentsStore } from "../stores/components";
 import { useComponentConfigStore } from "../stores/componentConfig";
 import HoverMask from "./HoverMask";
+import SelectedMask from "./SelectedMask";
 
 export function EditArea() {
-  const { components } = useComponentsStore();
+  const { components, curComponentId, setCurComponentId } =
+    useComponentsStore();
   const { componentConfig } = useComponentConfigStore();
   const [hoverComponentId, setHoverComponentId] = useState<number>();
 
@@ -16,16 +18,16 @@ export function EditArea() {
         setHoverComponentId(+id);
       }
     }
-    // const path = e.nativeEvent.composedPath();
-    // for (let i = 0; i < path.length; i++) {
-    //   const ele = path[i] as HTMLElement;
+  };
 
-    //   const componentId = ele.dataset?.componentId;
-    //   if (componentId) {
-    //     setHoverComponentId(+componentId);
-    //     return;
-    //   }
-    // }
+  const handleClick: MouseEventHandler = (e) => {
+    const target = (e.target as HTMLElement).closest("[data-component-id]");
+    if (target) {
+      const id = target.getAttribute("data-component-id");
+      if (id) {
+        setCurComponentId(+id);
+      }
+    }
   };
 
   function renderComponents(components: Component[]): React.ReactNode {
@@ -53,17 +55,24 @@ export function EditArea() {
       className="h-full edit-area"
       onMouseOver={handleOnMouseOver}
       onMouseLeave={() => setHoverComponentId(undefined)}
+      onClick={handleClick}
     >
       {renderComponents(components)}
-      {hoverComponentId && (
+      {hoverComponentId && hoverComponentId !== curComponentId && (
         <HoverMask
           portalWrapperClassName="portal-wrapper"
           containerClassName="edit-area"
           componentId={hoverComponentId}
         />
       )}
+      {curComponentId && (
+        <SelectedMask
+          portalWrapperClassName="portal-wrapper"
+          containerClassName="edit-area"
+          componentId={curComponentId}
+        />
+      )}
       <div className="portal-wrapper"></div>
-      {/* <pre>{JSON.stringify(components, null, 2)}</pre> */}
     </div>
   );
 }

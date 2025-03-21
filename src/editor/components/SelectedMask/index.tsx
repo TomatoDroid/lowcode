@@ -2,18 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../../../utils";
 import { getComponentById, useComponentsStore } from "../../stores/components";
+import { Dropdown, Popconfirm, Space } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 
-interface HoverMaskProps {
+interface SelectedMaskProps {
   portalWrapperClassName: string;
   containerClassName: string;
   componentId: number;
 }
-export default function HoverMask({
+export default function SelectedMask({
   portalWrapperClassName,
   containerClassName,
   componentId,
-}: HoverMaskProps) {
-  const { components } = useComponentsStore();
+}: SelectedMaskProps) {
+  const { components, curComponentId, setCurComponentId, deleteComponent } =
+    useComponentsStore();
   const [position, setPosition] = useState({
     top: 0,
     left: 0,
@@ -30,6 +33,16 @@ export default function HoverMask({
   useEffect(() => {
     updatePosition();
   }, [components]);
+
+  useEffect(() => {
+    const resizeHandler = () => {
+      updatePosition();
+    };
+    window.addEventListener("resize", resizeHandler);
+    return () => {
+      window.removeEventListener("resize", resizeHandler);
+    };
+  }, []);
 
   function updatePosition() {
     if (!componentId) return;
@@ -67,6 +80,21 @@ export default function HoverMask({
     return getComponentById(componentId, components);
   }, [componentId]);
 
+  function handleDelete() {
+    deleteComponent(componentId);
+    setCurComponentId(null);
+  }
+
+  const parentComponents = useMemo(() => {
+    const parentComponents = [];
+    let component = curComponent;
+    while (component?.parentId) {
+      component = getComponentById(component.parentId, components);
+      parentComponents.push(component);
+    }
+    return parentComponents;
+  }, [curComponent]);
+
   return createPortal(
     <>
       <div
@@ -81,6 +109,7 @@ export default function HoverMask({
           height: position.height,
         }}
       ></div>
+
       <div
         style={{
           position: "absolute",
@@ -92,9 +121,36 @@ export default function HoverMask({
           transform: "translate(-100%, -100%)",
         }}
       >
-        <div className="px-2 py-1 bg-blue-950 rounded-md text-white cursor-pointer w-12">
-          {curComponent?.desc}
-        </div>
+        <Space className="bg-blue-950 rounded-sm px-1">
+          <Dropdown
+            menu={{
+              items: parentComponents.map((item) => ({
+                key: item!.id,
+                label: item!.desc,
+              })),
+              onClick: (item) => {
+                setCurComponentId(+item!.key);
+              },
+            }}
+            disabled={parentComponents.length === 0}
+          >
+            <div className="px-2 py-1 rounded-b-md text-white cursor-pointer text-wrap w-12">
+              {curComponent?.desc}
+            </div>
+          </Dropdown>
+          {curComponentId !== 1 && (
+            <div>
+              <Popconfirm
+                title="确认删除"
+                okText={"确认"}
+                cancelText={"取消"}
+                onConfirm={handleDelete}
+              >
+                <DeleteOutlined style={{ color: "#fb2c36" }} />
+              </Popconfirm>
+            </div>
+          )}
+        </Space>
       </div>
     </>,
     el

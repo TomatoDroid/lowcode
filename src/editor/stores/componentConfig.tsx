@@ -6,6 +6,7 @@ import { devtools } from "zustand/middleware";
 
 export interface ComponentConfig {
   name: string;
+  desc: string;
   defaultProps: Record<string, any>;
   component: any;
 }
@@ -27,6 +28,7 @@ export const useComponentConfigStore = create<State & Action>()(
         Container: {
           name: "Container",
           defaultProps: {},
+          desc: "容器",
           component: Container,
         },
         Button: {
@@ -35,11 +37,13 @@ export const useComponentConfigStore = create<State & Action>()(
             text: "按钮",
             type: "primary",
           },
+          desc: "按钮",
           component: Button,
         },
         Page: {
           name: "Page",
           defaultProps: {},
+          desc: "页面",
           component: Page,
         },
       },

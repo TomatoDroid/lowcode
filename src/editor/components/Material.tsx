@@ -12,7 +12,11 @@ export function Material() {
   return (
     <div className="flex gap-2 flex-wrap p-2">
       {components.map((component, index) => (
-        <MaterialItem name={component.name} key={component.name + index} />
+        <MaterialItem
+          desc={component.desc}
+          name={component.name}
+          key={component.name + index}
+        />
       ))}
     </div>
   );
