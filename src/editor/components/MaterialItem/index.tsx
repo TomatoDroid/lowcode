@@ -18,7 +18,7 @@ export function MaterialItem(props: MaterialItemProps) {
   return (
     <div
       ref={drag}
-      className="border-dashed border border-white p-2 cursor-move hover:bg-blue-200 hover:text-black"
+      className="border-dashed border border-black p-2 cursor-move hover:bg-blue-200"
     >
       {desc}
     </div>

@@ -1,3 +1,4 @@
+import { CSSProperties } from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -5,6 +6,7 @@ export interface Component {
   id: number;
   name: string;
   props: any;
+  styles?: CSSProperties;
   desc: string;
   children?: Component[];
   parentId?: number;
@@ -12,6 +14,7 @@ export interface Component {
 
 interface State {
   components: Component[];
+  mode: "edit" | "preview";
   curComponentId: number | null;
   curComponent: Component | null;
 }
@@ -19,8 +22,14 @@ interface State {
 interface Action {
   addComponent: (component: Component, parentId?: number) => void;
   deleteComponent: (componentId: number) => void;
-  updateComponent: (componentId: number, props: any) => void;
+  updateComponentProps: (componentId: number, props: any) => void;
+  updateComponentStyles: (
+    componentId: number,
+    styles: CSSProperties,
+    replace?: boolean
+  ) => void;
   setCurComponentId: (componentId: number | null) => void;
+  setMode: (mode: State["mode"]) => void;
 }
 
 export const useComponentsStore = create<State & Action>()(
@@ -36,7 +45,10 @@ export const useComponentsStore = create<State & Action>()(
       ],
       curComponentId: null,
       curComponent: null,
-
+      mode: "edit",
+      setMode(mode) {
+        set({ mode });
+      },
       setCurComponentId(componentId) {
         set((state) => {
           return {
@@ -79,12 +91,23 @@ export const useComponentsStore = create<State & Action>()(
           }
         }
       },
-      updateComponent(componentId, props) {
+      updateComponentProps(componentId, props) {
         const component = getComponentById(componentId, get().components);
         if (component) {
           component.props = { ...component.props, ...props };
           set({ components: [...get().components] });
         }
+        return { components: [...get().components] };
+      },
+      updateComponentStyles(componentId, styles, replace) {
+        const component = getComponentById(componentId, get().components);
+        if (component) {
+          component.styles = replace
+            ? { ...styles }
+            : { ...component.styles, ...styles };
+          set({ components: [...get().components] });
+        }
+        return { components: [...get().components] };
       },
     };
   })

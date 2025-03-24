@@ -7,9 +7,15 @@ export interface ButtonProps {
   text: string;
 }
 
-export function Button({ type, text, id }: CommonComponentProps) {
+export function ButtonProd({
+  type,
+  text,
+  id,
+  styles,
+  ...props
+}: CommonComponentProps) {
   return (
-    <AntButton data-component-id={id} type={type}>
+    <AntButton type={type} style={styles} {...props}>
       {text}
     </AntButton>
   );
