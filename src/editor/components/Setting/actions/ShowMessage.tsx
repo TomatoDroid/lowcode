@@ -30,7 +30,7 @@ export function ShowMessage(props: ShowMessageProps) {
       type: "showMessage",
       config: {
         type: value,
-        text: text,
+        text,
       },
     });
   }
@@ -42,7 +42,7 @@ export function ShowMessage(props: ShowMessageProps) {
       type: "showMessage",
       config: {
         type,
-        text,
+        text: value,
       },
     });
   }
