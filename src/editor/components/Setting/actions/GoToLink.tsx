@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useComponentsStore } from "../../../stores/components";
 import TextArea from "antd/es/input/TextArea";
 
@@ -8,14 +8,19 @@ export interface GoToLinkConfig {
 }
 
 export interface GoToLinkProps {
+  value?: string;
   defaultValue?: string;
   onChange?: (value: GoToLinkConfig) => void;
 }
 
 export function GoToLink(props: GoToLinkProps) {
-  const { defaultValue, onChange } = props;
+  const { defaultValue, onChange, value: val } = props;
   const { curComponentId } = useComponentsStore();
   const [value, setValue] = useState(defaultValue);
+
+  useEffect(() => {
+    setValue(val);
+  }, [val]);
 
   function urlChange(value: string) {
     if (!curComponentId) return;

@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useComponentConfigStore } from "../../stores/componentConfig";
 import { Component, useComponentsStore } from "../../stores/components";
 import { message } from "antd";
-import { GoToLinkConfig } from "../Setting/actions/GoToLink";
-import { ShowMessageConfig } from "../Setting/actions/ShowMessage";
+import { ActionConfig } from "../Setting/ActionModal";
 
 export function Preview() {
   const { components } = useComponentsStore();
   const { componentConfig } = useComponentConfigStore();
+
+  const componentRefs = useRef<Record<string, any>>({});
 
   function handleEvent(component: Component) {
     const props: Record<string, any> = {};
@@ -17,19 +18,31 @@ export function Preview() {
       if (!eventConfig) return;
 
       props[event.name] = () => {
-        eventConfig.actions?.forEach(
-          (action: GoToLinkConfig | ShowMessageConfig) => {
-            if (action.type === "goToLink") {
-              window.location.href = eventConfig.url;
-            } else if (action.type === "showMessage") {
-              if (action.config.type === "success") {
-                message.success(action.config.text);
-              } else if (action.config.type === "error") {
-                message.error(action.config.text);
-              }
+        eventConfig.actions?.forEach((action: ActionConfig) => {
+          if (action.type === "goToLink") {
+            window.location.href = eventConfig.url;
+          } else if (action.type === "showMessage") {
+            if (action.config.type === "success") {
+              message.success(action.config.text);
+            } else if (action.config.type === "error") {
+              message.error(action.config.text);
+            }
+          } else if (action.type === "customJS") {
+            const func = new Function("context", action.code);
+            func({
+              name: component.name,
+              props: component.props,
+              showMessage(content: string) {
+                message.success(content);
+              },
+            });
+          } else if (action.type === "componentMethod") {
+            const component = componentRefs.current[action.config.componentId];
+            if (component) {
+              component[action.config.method]?.();
             }
           }
-        );
+        });
       };
     });
     return props;
@@ -46,6 +59,9 @@ export function Preview() {
           id: component.id,
           name: component.name,
           styles: component.styles,
+          ref: (ref: Record<string, any>) => {
+            componentRefs.current[component.id] = ref;
+          },
           ...config.defaultProps,
           ...component.props,
           ...handleEvent(component),

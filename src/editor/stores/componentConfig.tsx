@@ -6,6 +6,8 @@ import { devtools } from "zustand/middleware";
 import { ContainerProd } from "../materials/Container/prod";
 import { ButtonProd } from "../materials/Button/prod";
 import { PageProd } from "../materials/Page/prod";
+import { ModalDev } from "../materials/Modal/dev";
+import { ModalProd } from "../materials/Modal/prod";
 
 export interface ComponentSetter {
   name: string;
@@ -18,6 +20,11 @@ export interface ComponentEvent {
   name: string;
   label: string;
 }
+
+export interface ComponentMethod {
+  name: string;
+  label: string;
+}
 export interface ComponentConfig {
   name: string;
   desc: string;
@@ -25,6 +32,7 @@ export interface ComponentConfig {
   setter: ComponentSetter[];
   stylesSetter?: ComponentSetter[];
   events?: ComponentEvent[];
+  methods?: ComponentMethod[];
   dev: any;
   prod: any;
 }
@@ -85,12 +93,43 @@ export const useComponentConfigStore = create<State & Action>()(
             },
           ],
           events: [
-            {name: 'onClick', 'label': '点击事件'},
-            {name: 'onDoubleClick', 'label': '双击事件'},
+            { name: "onClick", label: "点击事件" },
+            { name: "onDoubleClick", label: "双击事件" },
           ],
           desc: "按钮",
           dev: ButtonDev,
           prod: ButtonProd,
+        },
+        Modal: {
+          name: "Modal",
+          defaultProps: {
+            title: "弹窗",
+          },
+          setter: [
+            {
+              name: "title",
+              label: "标题",
+              type: "input",
+            },
+          ],
+          stylesSetter: [],
+          events: [
+            {
+              name: "onOk",
+              label: "确认事件",
+            },
+            {
+              name: "onCancel",
+              label: "取消事件",
+            },
+          ],
+          methods: [
+            { name: "open", label: "打开弹窗" },
+            { name: "close", label: "关闭弹窗" },
+          ],
+          desc: "弹窗",
+          dev: ModalDev,
+          prod: ModalProd,
         },
         Page: {
           name: "Page",
