@@ -7,7 +7,10 @@ export function ModalDev({
   title,
   styles,
 }: CommonComponentProps) {
-  const { canDrop, drop } = useMaterialDrop(["Button", "Container"], id);
+  const { canDrop, drop } = useMaterialDrop(
+    ["Button", "Container", "Table"],
+    id
+  );
 
   return (
     <div
