@@ -3,6 +3,7 @@ import { CommonComponentProps } from "../../interface";
 import { Table as AntdTable } from "antd";
 import axios from "axios";
 import { format } from "date-fns";
+import dayjs from "dayjs";
 
 export function TableProd({ url, children }: CommonComponentProps) {
   const [data, setData] = useState<Record<string, any>[]>();
@@ -27,7 +28,7 @@ export function TableProd({ url, children }: CommonComponentProps) {
         return {
           title: item.props.title,
           dataIndex: item.props.dataIndex,
-          render: (value: any) => (value ? format(value, "yyyy-MM-dd") : null),
+          render: (value: any) => (value ? dayjs().format("YYYY-MM-DD") : null),
         };
       } else {
         return {

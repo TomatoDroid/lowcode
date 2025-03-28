@@ -1,6 +1,6 @@
 import { CSSProperties } from "react";
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
+import { create, StateCreator } from "zustand";
+import { devtools, persist } from "zustand/middleware";
 
 export interface Component {
   id: number;
@@ -32,84 +32,88 @@ interface Action {
   setMode: (mode: State["mode"]) => void;
 }
 
-export const useComponentsStore = create<State & Action>()(
-  devtools((set, get) => {
-    return {
-      components: [
-        {
-          id: 1,
-          name: "Page",
-          props: {},
-          desc: "页面",
-        },
-      ],
-      curComponentId: null,
-      curComponent: null,
-      mode: "edit",
-      setMode(mode) {
-        set({ mode });
+const creator: StateCreator<State & Action> = (set, get) => {
+  return {
+    components: [
+      {
+        id: 1,
+        name: "Page",
+        props: {},
+        desc: "页面",
       },
-      setCurComponentId(componentId) {
-        set((state) => {
-          return {
-            curComponentId: componentId,
-            curComponent: getComponentById(componentId, state.components),
-          };
-        });
-      },
-      addComponent(component, parentId) {
-        set((state) => {
-          if (parentId) {
-            const parent = getComponentById(parentId, state.components);
-            if (parent) {
-              if (parent.children) {
-                parent.children.push(component);
-              } else {
-                parent.children = [component];
-              }
-            }
-            component.parentId = parentId;
-            return {
-              components: [...state.components],
-            };
-          }
-          return {
-            components: [...state.components, component],
-          };
-        });
-      },
-      deleteComponent(componentId) {
-        if (!componentId) return;
-        const component = getComponentById(componentId, get().components);
-        if (component?.parentId) {
-          const parent = getComponentById(component.parentId, get().components);
+    ],
+    curComponentId: null,
+    curComponent: null,
+    mode: "edit",
+    setMode(mode) {
+      set({ mode });
+    },
+    setCurComponentId(componentId) {
+      set((state) => {
+        return {
+          curComponentId: componentId,
+          curComponent: getComponentById(componentId, state.components),
+        };
+      });
+    },
+    addComponent(component, parentId) {
+      set((state) => {
+        if (parentId) {
+          const parent = getComponentById(parentId, state.components);
           if (parent) {
-            parent.children = parent.children?.filter(
-              (item) => item.id !== componentId
-            );
-            set({ components: [...get().components] });
+            if (parent.children) {
+              parent.children.push(component);
+            } else {
+              parent.children = [component];
+            }
           }
+          component.parentId = parentId;
+          return {
+            components: [...state.components],
+          };
         }
-      },
-      updateComponentProps(componentId, props) {
-        const component = getComponentById(componentId, get().components);
-        if (component) {
-          component.props = { ...component.props, ...props };
+        return {
+          components: [...state.components, component],
+        };
+      });
+    },
+    deleteComponent(componentId) {
+      if (!componentId) return;
+      const component = getComponentById(componentId, get().components);
+      if (component?.parentId) {
+        const parent = getComponentById(component.parentId, get().components);
+        if (parent) {
+          parent.children = parent.children?.filter(
+            (item) => item.id !== componentId
+          );
           set({ components: [...get().components] });
         }
-        return { components: [...get().components] };
-      },
-      updateComponentStyles(componentId, styles, replace) {
-        const component = getComponentById(componentId, get().components);
-        if (component) {
-          component.styles = replace
-            ? { ...styles }
-            : { ...component.styles, ...styles };
-          set({ components: [...get().components] });
-        }
-        return { components: [...get().components] };
-      },
-    };
+      }
+    },
+    updateComponentProps(componentId, props) {
+      const component = getComponentById(componentId, get().components);
+      if (component) {
+        component.props = { ...component.props, ...props };
+        set({ components: [...get().components] });
+      }
+      return { components: [...get().components] };
+    },
+    updateComponentStyles(componentId, styles, replace) {
+      const component = getComponentById(componentId, get().components);
+      if (component) {
+        component.styles = replace
+          ? { ...styles }
+          : { ...component.styles, ...styles };
+        set({ components: [...get().components] });
+      }
+      return { components: [...get().components] };
+    },
+  };
+};
+
+export const useComponentsStore = create<State & Action>()(
+  persist(creator, {
+    name: "components-store",
   })
 );
 
